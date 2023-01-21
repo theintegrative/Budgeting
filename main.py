@@ -1,13 +1,31 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import pymongo
 import pandas as pd
-from pprint import pprint
+
+
+balance = {
+      "$setWindowFields": {
+         "sortBy": { "date": 1 },
+         "output": {
+            "balance": {
+               "$sum": "$balance",
+               "window": {
+                  "documents": [ "unbounded", "current" ]
+               }
+            }
+         }
+      }
+   }
+
 
 class Bank:
-    def __init__(self, account):
+    def __init__(self, account, amount):
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.mybank = self.client["bank"]
         self.account = self.mybank[account]
-        self.starter(1000)
+        self.starter(amount)
     
     def transact_many(self, transactions):
         self.account.insert_many(transactions)
@@ -17,13 +35,23 @@ class Bank:
         date = now.strftime('%Y-%m-%d')
         self.account.insert_one({"date": date, "name": "Initial", "credit": start_credit, "debit": 0, "balance": 0})
         
+    def calculate_balance(self):
+        placeholder = 0
+        calculated = []
+        for transaction in self.account.find({}, {}).sort([("date", 1)]):
+            self.account.delete_one(transaction)
+            placeholder += (transaction["debit"] + transaction["credit"])
+            transaction["balance"] += placeholder
+            self.account.insert_one(transaction)
+          
+    def show(self):
+        return [transaction for transaction in self.account.find({}, {"_id": 0, "date": 1, "balance": 1})]
+
     def showall(self):
         return [transaction for transaction in self.account.find({}, {"_id":0})]
     
     def dropall(self):
         self.account.drop()
-
-account = Bank("myaccount")
 
 class payment:
     def __init__(self, name, amount, day, periods, freq="M"):
@@ -33,8 +61,8 @@ class payment:
         self.periods = periods
         self.freq = freq
     
-    def transaction_json(self, date, credit, debit):
-        return {"date": date, "name": self.name, "credit": credit, "debit": debit, "balance": 0}
+    def transaction_json(self, date, credit, debit, balance):
+        return {"date": date, "name": self.name, "credit": credit, "debit": -debit, "balance": balance}
         
     def first_day(self):
         now = pd.Timestamp.now()
@@ -45,17 +73,17 @@ class payment:
         for date in pd.date_range(self.first_day(), periods=self.periods, freq=self.freq):
             moment = pd.Timestamp(date)
             yield moment.strftime('%Y-%m-%d')
+            
+    def generate(self):
+        if self.amount < 0:
+            return self.generate_debit()
+        else:
+            return self.generate_credit()
 
     def generate_credit(self):
         date = self.dates()
-        return [self.transaction_json(next(date), self.amount, 0) for _ in range(self.periods)]
+        return [self.transaction_json(next(date), self.amount, 0, 0) for _ in range(self.periods)]
             
     def generate_debit(self):
         date = self.dates()
-        return [self.transaction_json(next(date), 0, self.amount) for _ in range(self.periods)]
-
-rent = payment("rent", 1000, 1, 4)
-account.transact_many(rent.generate_debit())
-pprint(account.showall())
-account.dropall()
-
+        return [self.transaction_json(next(date), 0, -self.amount, 0) for _ in range(self.periods)]
