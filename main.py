@@ -1,24 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import pymongo
 import pandas as pd
-
-
-balance = {
-      "$setWindowFields": {
-         "sortBy": { "date": 1 },
-         "output": {
-            "balance": {
-               "$sum": "$balance",
-               "window": {
-                  "documents": [ "unbounded", "current" ]
-               }
-            }
-         }
-      }
-   }
-
 
 class Bank:
     def __init__(self, account, amount):
