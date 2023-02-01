@@ -1,6 +1,6 @@
 # Personal Finance App
 
-This app is a personal finance tool built for your budget with Python and MongoDB. It allows users to track their income and expenses, create and manage budgets, and forecast future financial situations. The intention is to model the financial part of the blogpost [here](https://theintegrative.net/insights/plan-for-the-future/).
+This app is a personal finance tool built for your budget with Python and MongoDB. It allows users to track their income and expenses, create and manage budgets, and forecast future financial situations. The intention is to model the financial part of the blogpost [here](https://theintegrative.net/p/plan-for-the-future/).
 
 ## Getting Started
 
