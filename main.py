@@ -8,12 +8,17 @@ class Bank:
         self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.mybank = self.client["bank"]
         self.account = self.mybank[account]
-        self.starter(amount)
+        self.payments = self.mybank["payments"]
+        self.investments = self.mybank["investments"]
+        self.start(amount)
     
-    def transact_many(self, transactions):
-        self.account.insert_many(transactions)
-        
-    def starter(self, start_credit):
+    def add_payment(self, name, amount, day, periods, freq="M"):
+        self.payments.insert_one({"name": name, "amount": amount, "day": day, "periods": periods, "freq": freq})
+
+    def add_investment(self, priority, backup, start, name):
+        self.investments.insert_one({"priority": priority, "backup": backup, "start": start, "name": name})
+
+    def start(self, start_credit):
         now = pd.Timestamp.now()
         date = now.strftime('%Y-%m-%d')
         self.account.insert_one({"date": date, "name": "Initial", "credit": start_credit, "debit": 0, "balance": 0})    
@@ -30,11 +35,26 @@ class Bank:
             placeholder += (transaction["debit"] + transaction["credit"])
             transaction["balance"] += placeholder
             self.account.insert_one(transaction)
+
+    def sort_budgets(self):
+        subscription = []
+        investments = []
+        payment_entries = self.payments.find({}, {"_id":0})
+        investment_entries = self.investments.find({}, {"_id":0})
+        investments_memo = {investment["name"]: investment for investment in investment_entries}
+        for payment in payment_entries:
+            if payment["name"] in investments_memo:
+                investments_memo[payment["name"]]["payments"] = self.to_payment(payment)
+                investments.append(investments_memo[payment["name"]])
+            else:
+                subscription.append(self.to_payment(payment))
+        self.fixed_budgets(subscription)
+        self.planed_investments(investments)
             
     def fixed_budgets(self, finances):
         for payments in finances:
             payments.dates_now()
-            self.transact_many([payment for payment in payments.generate()])
+            self.account.insert_many([payment for payment in payments.generate()])
             self.calculate_balance()
     
     def planed_investments(self, investments):
@@ -43,9 +63,13 @@ class Bank:
                 if transaction["balance"] > investment["start"]:
                     payments = investment["payments"]
                     payments.dates_from(transaction["date"])
-                    self.transact_many([payment for payment in payments.generate()])
+                    self.account.insert_many([payment for payment in payments.generate()])
                     self.calculate_balance()
                     break
+
+    def to_payment(self, entry):
+        return payment(entry["name"], entry["amount"], entry["day"], entry["periods"], entry["freq"])
+
                 
     def show(self):
         return [transaction for transaction in self.account.find({}, {"_id": 0, "name": 1, "date":1, "balance": 1})]
@@ -54,6 +78,8 @@ class Bank:
         return [transaction for transaction in self.account.find({}, {"_id":0})]
     
     def dropall(self):
+        self.payments.drop()
+        self.investments.drop()
         self.account.drop()
 
 class payment:
@@ -70,7 +96,7 @@ class payment:
 
     def first_day(self):
         now = pd.Timestamp.now()
-        now = now - pd.offsets.MonthBegin(self.day)
+        now = now + pd.offsets.MonthBegin(self.day)
         return now.strftime('%Y-%m-%d')
 
     def dates_now(self):    
