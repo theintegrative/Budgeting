@@ -103,6 +103,10 @@ class Bank:
     def showall(self):
         return [transaction for transaction in self.account.find({}, {"_id":0})]
 
+    def shownames(self):
+        return [transaction["name"] for transaction in self.payments.find({}, {"name":1, "_id": 0})]
+
+
     def dropall(self):
         self.payments.drop()
         self.investments.drop()
