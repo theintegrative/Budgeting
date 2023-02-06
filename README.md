@@ -25,12 +25,24 @@ pip install -r requirements.txt
 - [ ] Comparing scenarios and predictions
 - [ ] Comparing predictions with observations
 - [ ] Financial forecasting
-- [ ] Prioritisation of investments
+
+
+## TODO
+- [ ] Drop down menu for Monthly, Yearly, Daily Frequency in Subscription
+- [ ] Pre filled fields for speed
+- [ ] Menu for setting dates
+- [ ] Make conditinal date vs amount mutally exclusive
+- [ ] Remove duplicates in show tab
+- [ ] Show payments
+- [ ] Show investments "conditionals"
+- [ ] Show dates
+- [ ] Create graph view
 
 ## Built With
 
 - [Python](https://www.python.org/) - Programming language
 - [MongoDB](https://www.mongodb.com/) - Database management system
+- [CustomTKinter](https://github.com/TomSchimansky/CustomTkinter) - Python UI 
 
 ## Contributing
 
