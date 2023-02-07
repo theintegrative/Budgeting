@@ -13,14 +13,22 @@ class Bank:
         self.start(amount)
     
     def add_payment(self, name, amount, day, periods, freq="M"):
-        self.payments.insert_one({"name": name, "amount": amount, "day": day, "periods": periods, "freq": freq})
+        if name not in self.shownames():
+            self.payments.insert_one({"name": name, "amount": amount, "day": day, "periods": periods, "freq": freq})
+        else: 
+            print(f"{name} allready in payments")
 
     def add_investment(self, start, name):
-        self.investments.insert_one({"start": start, "name": name})
+        if name in self.shownames():
+            self.investments.insert_one({"start": start, "name": name})
+        else:
+            print(f"{name} not in payments")
 
     def add_date(self, name, date):
-        self.dates.insert_one({"date": date, "name": name})
-
+        if name in self.shownames():
+            self.dates.insert_one({"date": date, "name": name})
+        else:
+            print(f"{name} not in payments")
 
     def start(self, start_credit):
         now = pd.Timestamp.now()
@@ -106,6 +114,8 @@ class Bank:
     def shownames(self):
         return [transaction["name"] for transaction in self.payments.find({}, {"name":1, "_id": 0})]
 
+    def drop_account(self):
+        self.account.drop()
 
     def dropall(self):
         self.payments.drop()
