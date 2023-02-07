@@ -20,23 +20,23 @@ pip install -r requirements.txt
 ## Features
 
 - Income and expense tracking
-- Budget creation and management
+- [ ] Budget creation and management
 - [ ] Separating budgets like envelopes
 - [ ] Comparing scenarios and predictions
 - [ ] Comparing predictions with observations
 - [ ] Financial forecasting
 
-
 ## TODO
-- [ ] Drop down menu for Monthly, Yearly, Daily Frequency in Subscription
-- [ ] Pre filled fields for speed
-- [ ] Menu for setting dates
-- [ ] Make conditinal date vs amount mutally exclusive
-- [ ] Remove duplicates in show tab
+- [x] Drop down menu for Monthly, Yearly, Daily Frequency in Subscription
+- [x] Pre filled fields for speed
+- [ ] Menu for setting dates under dates tab
+- [x] Make conditinal date vs amount mutally exclusive
+- [x] Remove duplicates in show tab
 - [ ] Show payments
 - [ ] Show investments "conditionals"
 - [ ] Show dates
 - [ ] Create graph view
+- [ ] Refactor the code for beter naming conventions 
 
 ## Built With
 

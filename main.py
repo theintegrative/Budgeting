@@ -13,19 +13,19 @@ class Bank:
         self.start(amount)
     
     def add_payment(self, name, amount, day, periods, freq="M"):
-        if name not in self.shownames():
+        if name not in self.show_account():
             self.payments.insert_one({"name": name, "amount": amount, "day": day, "periods": periods, "freq": freq})
         else: 
             print(f"{name} allready in payments")
 
     def add_investment(self, start, name):
-        if name in self.shownames():
+        if name in self.show_account():
             self.investments.insert_one({"start": start, "name": name})
         else:
             print(f"{name} not in payments")
 
     def add_date(self, name, date):
-        if name in self.shownames():
+        if name in self.show_account():
             self.dates.insert_one({"date": date, "name": name})
         else:
             print(f"{name} not in payments")
@@ -111,8 +111,20 @@ class Bank:
     def showall(self):
         return [transaction for transaction in self.account.find({}, {"_id":0})]
 
-    def shownames(self):
+    def show_account(self):
         return [transaction["name"] for transaction in self.payments.find({}, {"name":1, "_id": 0})]
+
+    def show_dates_not_investments(self):
+        return [transaction for transaction in self.show_account() if transaction not in self.show_investments()]
+
+    def show_investments_not_dates(self):
+        return [transaction for transaction in self.show_account() if transaction not in self.show_dates()]
+        
+    def show_investments(self):
+        return [transaction["name"] for transaction in self.investments.find({}, {"name":1, "_id": 0})]
+
+    def show_dates(self):
+        return [transaction["name"] for transaction in self.dates.find({}, {"name":1, "_id": 0})]
 
     def drop_account(self):
         self.account.drop()
